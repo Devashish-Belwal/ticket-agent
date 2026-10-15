@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Environment and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Build and test output
+dist/
+out/
+coverage/
+*.lcov
+*.tgz
+*.tsbuildinfo
+
+# Logs and caches
+logs/
+*.log
+.cache/
+.eslintcache
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
