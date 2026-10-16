@@ -350,8 +350,6 @@ Both app Dockerfiles install from their app directories. The backend Dockerfile 
 └── bun.lock                    # Dependency lockfile
 ```
 
-The existing [`apps/backend/README.md`](apps/backend/README.md) describes the original backend assignment and response contract. This root README describes the integrated repository as currently implemented, including the web dashboard and Docker setup.
-
 ## Security and limitations
 
 - Demo users, passwords, orders, policies, and inventory are seeded in source. The dashboard automatically signs in as Customer 1 when no stored session exists.
