@@ -1,0 +1,96 @@
+name: CI/CD Pipeline - Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Run Type Checks
+        run: bun run check
+
+  deploy:
+    name: Deploy to EC2
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            set -e
+            APP_DIR="/home/ubuntu/ticket-agent"
+
+            # 1. Clone repository if not already cloned, or pull latest
+            if [ ! -d "$APP_DIR" ]; then
+              echo ">>> Cloning repository into $APP_DIR..."
+              git clone https://github.com/${{ github.repository }}.git "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+            echo ">>> Pulling latest code from main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            # 2. Write/Update .env file from GitHub Secret if configured
+            if [ -n "${{ secrets.BACKEND_ENV }}" ]; then
+              echo ">>> Updating apps/backend/.env from GitHub Secrets..."
+              cat << 'EOF' > apps/backend/.env
+            ${{ secrets.BACKEND_ENV }}
+            EOF
+              chmod 600 apps/backend/.env
+            fi
+
+            # 3. Ensure Nginx configuration is active
+            if [ -f "$APP_DIR/nginx/ticket-agent.conf" ]; then
+              sudo cp "$APP_DIR/nginx/ticket-agent.conf" /etc/nginx/sites-available/ticket-agent
+              sudo ln -sf /etc/nginx/sites-available/ticket-agent /etc/nginx/sites-enabled/ticket-agent
+              sudo rm -f /etc/nginx/sites-enabled/default
+              sudo nginx -t && sudo systemctl reload nginx || true
+            fi
+
+            # 4. Rebuild & Restart Docker Containers
+            echo ">>> Building and starting Docker containers..."
+            docker compose down || true
+            docker compose up -d --build --remove-orphans
+
+            # 5. Clean up dangling images to save disk space
+            docker image prune -f || true
+
+            # 6. Verify Healthcheck
+            echo ">>> Checking backend health..."
+            ATTEMPTS=0
+            MAX_ATTEMPTS=15
+            until curl -sf http://127.0.0.1:3000/health > /dev/null; do
+              ATTEMPTS=$((ATTEMPTS + 1))
+              if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+                echo "ERROR: Backend health check failed!"
+                docker compose logs --tail 40 backend
+                exit 1
+              fi
+              echo "Waiting for healthcheck ($ATTEMPTS/$MAX_ATTEMPTS)..."
+              sleep 3
+            done
+
+            echo ">>> Deployment successfully completed!"
