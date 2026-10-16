@@ -64,6 +64,12 @@ app.get("/__test/state", allowEvaluator, (_request: Request, response: Response)
 });
 
 // Students add the documented authentication and ticket routes above this fallback.
+import authRouter from "./routes/auth";
+import ticketRouter from "./routes/tickets";
+
+app.use("/api/auth", authRouter);
+app.use("/api/tickets", ticketRouter);
+
 app.use((_request: Request, response: Response) => {
   response.status(404).json({
     success: false,
@@ -72,8 +78,9 @@ app.use((_request: Request, response: Response) => {
 });
 
 const port = Number(process.env.PORT ?? 3000);
-export const server = app.listen(port, "127.0.0.1", () => {
-  console.log(`S30 support backend listening on http://127.0.0.1:${port}`);
+const host = process.env.HOST ?? "0.0.0.0";
+export const server = app.listen(port, host, () => {
+  console.log(`S30 support backend listening on http://${host}:${port}`);
 });
 
 // Keep the Bun process alive while Express owns the HTTP listener.

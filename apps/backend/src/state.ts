@@ -221,3 +221,5 @@ export function resetState() {
   Object.assign(state, createSeedState());
   return true;
 }
+
+export default state;
