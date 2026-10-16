@@ -1,0 +1,18 @@
+{
+  "name": "ticket-agent",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun node_modules/turbo/bin/turbo dev",
+    "start": "bun node_modules/turbo/bin/turbo start",
+    "test": "bun node_modules/turbo/bin/turbo test",
+    "check": "bun node_modules/turbo/bin/turbo check"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "packageManager": "bun@1.3.13"
+}

@@ -2,9 +2,9 @@
 
 These are black-box contract tests for the S30 AI Customer Support Agent assignment. They start the
 student server with `bun run start`, call only the documented HTTP routes, and use the real provider
-configuration from `backend/.env`.
+configuration from `apps/backend/.env`.
 
-AI provider configuration, `JWT_SECRET`, and `PORT` are loaded from `backend/.env`. The evaluator passes
+AI provider configuration, `JWT_SECRET`, and `PORT` are loaded from `apps/backend/.env`. The evaluator passes
 all provider-specific variables to the student server, so students may use any real provider. Values
 whose names end in `API_KEY`, `SECRET`, or `TOKEN` are treated as secrets and are never printed by the
 helpers. The evaluator generates a private reset token, starts the server with `NODE_ENV=test`, and
@@ -14,7 +14,7 @@ Required student scripts:
 
 - `bun run start`
 
-Run from `backend`:
+Run from `apps/backend`:
 
 ```sh
 bun test

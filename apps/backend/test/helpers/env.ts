@@ -33,7 +33,7 @@ const envFile = Bun.file(resolve(backendDir, ".env"));
 
 export async function loadEvaluatorEnv() {
   if (!(await envFile.exists())) {
-    throw new Error("SETUP: backend/.env is required");
+    throw new Error("SETUP: apps/backend/.env is required");
   }
 
   const fileEnv = parseEnv(await envFile.text());
@@ -41,10 +41,10 @@ export async function loadEvaluatorEnv() {
   const port = merged.PORT;
 
   if (!port || !/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
-    throw new Error("SETUP: PORT in backend/.env must be a valid TCP port");
+    throw new Error("SETUP: PORT in apps/backend/.env must be a valid TCP port");
   }
   if (!merged.JWT_SECRET) {
-    throw new Error("SETUP: JWT_SECRET must be configured in backend/.env");
+    throw new Error("SETUP: JWT_SECRET must be configured in apps/backend/.env");
   }
   const childEnv: Record<string, string> = {};
   for (const [key, value] of Object.entries(merged)) {

@@ -25,6 +25,7 @@ coverage/
 logs/
 *.log
 .cache/
+.turbo/
 .eslintcache
 
 # Editors and operating systems

@@ -44,7 +44,7 @@ files inside `test`.
 ## Setup
 
 ```bash
-cd backend
+cd apps/backend
 bun install
 cp .env.example .env
 bun run dev
